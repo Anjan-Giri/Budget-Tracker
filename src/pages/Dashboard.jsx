@@ -2,11 +2,14 @@
 import { useLoaderData } from "react-router-dom";
 
 // functions from useJS
-import { createBudget, fetchData } from "../useJS";
+import { createBudget, createExpense, fetchData, waait } from "../useJS";
 
 // component
 import Intro from "../components/Intro";
 import AddBudgetForm from "../components/AddBudgetForm";
+import AddExpenseForm from "../components/AddExpenseForm";
+import BudgetItem from "../components/BudgetItem";
+import Table from "../components/Table";
 
 // library
 import { toast } from "react-toastify";
@@ -15,11 +18,14 @@ import { toast } from "react-toastify";
 export function dashBoardLoader() {
   const userName = fetchData("userName");
   const budgets = fetchData("budgets");
-  return { userName, budgets };
+  const expenses = fetchData("expenses");
+  return { userName, budgets, expenses };
 }
 
 // action
 export async function dashBoardAction({ request }) {
+  await waait();
+
   const data = await request.formData();
   const { _action, ...values } = Object.fromEntries(data);
 
@@ -44,9 +50,22 @@ export async function dashBoardAction({ request }) {
       throw new Error("Budget not created due to some error.");
     }
   }
+
+  if (_action === "createExpense") {
+    try {
+      createExpense({
+        name: values.newExpense,
+        amount: values.newExpenseAmount,
+        budgetId: values.newExpenseBudget,
+      });
+      return toast.success("Expense Added");
+    } catch (e) {
+      throw new Error("Expense not created due to some error.");
+    }
+  }
 }
 function Dashboard() {
-  const { userName, budgets } = useLoaderData();
+  const { userName, budgets, expenses } = useLoaderData();
 
   return (
     <>
@@ -56,12 +75,36 @@ function Dashboard() {
             Welcome back, <span className="accent">{userName}</span>
           </h1>
           <div className="grid-sm">
-            {/* {budgets ? () : ()} */}
-            <div className="grid-lg">
-              <div className="flex-lg">
+            {budgets && budgets.length > 0 ? (
+              <div className="grid-lg">
+                <div className="flex-lg">
+                  <AddBudgetForm />
+                  <AddExpenseForm budgets={budgets} />
+                </div>
+                <h2>Existing Budgets</h2>
+                <div className="budgets">
+                  {budgets.map((budget) => (
+                    <BudgetItem key={budget.id} budget={budget} />
+                  ))}
+                </div>
+                {expenses && expenses.length > 0 && (
+                  <div className="grid-md">
+                    <h2>Recent Expenses</h2>
+                    <Table
+                      expenses={expenses.sort(
+                        (a, b) => b.createdAt - a.createdAt
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid-sm">
+                <p>Bugeting is the key to financial freedom.</p>
+                <p>Create a budget to get started!</p>
                 <AddBudgetForm />
               </div>
-            </div>
+            )}
           </div>
         </div>
       ) : (
