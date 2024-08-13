@@ -1,8 +1,14 @@
 // react-router-dom imports
-import { useLoaderData } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 
 // functions from useJS
-import { createBudget, createExpense, fetchData, waait } from "../useJS";
+import {
+  createBudget,
+  createExpense,
+  deleteItem,
+  fetchData,
+  waait,
+} from "../useJS";
 
 // component
 import Intro from "../components/Intro";
@@ -63,6 +69,18 @@ export async function dashBoardAction({ request }) {
       throw new Error("Expense not created due to some error.");
     }
   }
+
+  if (_action === "deleteExpense") {
+    try {
+      deleteItem({
+        key: "expenses",
+        id: values.expenseId,
+      });
+      return toast.success("Expense Deleted");
+    } catch (e) {
+      throw new Error("Expense not deleted due to some error.");
+    }
+  }
 }
 function Dashboard() {
   const { userName, budgets, expenses } = useLoaderData();
@@ -91,10 +109,15 @@ function Dashboard() {
                   <div className="grid-md">
                     <h2>Recent Expenses</h2>
                     <Table
-                      expenses={expenses.sort(
-                        (a, b) => b.createdAt - a.createdAt
-                      )}
+                      expenses={expenses
+                        .sort((a, b) => b.createdAt - a.createdAt)
+                        .slice(0, 8)}
                     />
+                    {expenses.length > 8 && (
+                      <Link to="expenses" className="btn btn--dark">
+                        View all Expenses
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>

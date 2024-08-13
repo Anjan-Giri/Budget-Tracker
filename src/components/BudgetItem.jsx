@@ -1,3 +1,6 @@
+// rrd
+import { Form, Link } from "react-router-dom";
+
 // useJS function
 import {
   calculateSpentBudget,
@@ -5,7 +8,11 @@ import {
   formatPercentage,
 } from "../useJS";
 
-function BudgetItem({ budget }) {
+// library
+import { BanknotesIcon } from "@heroicons/react/24/outline";
+import { TrashIcon } from "@heroicons/react/24/solid";
+
+function BudgetItem({ budget, showDelete = false }) {
   const { id, name, amount, color } = budget;
   const spent = calculateSpentBudget(id);
 
@@ -27,6 +34,35 @@ function BudgetItem({ budget }) {
         <small>{formatCurrency(spent)} spent</small>
         <small>{formatCurrency(amount - spent)} remaining</small>
       </div>
+      {showDelete ? (
+        <div className="flex-sm">
+          <Form
+            method="post"
+            action="delete"
+            onSubmit={(event) => {
+              if (
+                !confirm(
+                  "Are you sure you want to permanently delete this budget?"
+                )
+              ) {
+                event.preventDefault();
+              }
+            }}
+          >
+            <button type="submit" className="btn">
+              <TrashIcon width={20} />
+              <span>Delete Budget</span>
+            </button>
+          </Form>
+        </div>
+      ) : (
+        <div className="flex-sm">
+          <Link to={`/budget/${id}`} className="btn">
+            <BanknotesIcon width={20} />
+            <span>View Details</span>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

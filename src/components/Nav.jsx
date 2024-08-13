@@ -10,7 +10,7 @@ import logomark from "../assets/logomark.svg";
 function Nav({ userName }) {
   return (
     <nav>
-      <NavLink tp="/" aria-label="Go to Home">
+      <NavLink to="/" aria-label="Go to Home">
         <img src={logomark} alt="" height={30} />
         <span>BudgetTrack</span>
       </NavLink>
